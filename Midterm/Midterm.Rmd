@@ -1,5 +1,5 @@
 ---
-title: "Untitled"
+title: "Midterm"
 author: "Sylvia Baeyens"
 date: "due 10/22/2021"
 output:
@@ -33,50 +33,95 @@ library(data.table)
 
 ```{r meat data cleanup, echo= FALSE, include= FALSE}
 #reading in meat dataset
-meatData= read.csv("MeatConsumption.csv") 
-meatData= as_tibble(meatData)
+# meatData= data.table::fread("MeatConsumption.csv") 
+# meatData = meatData %>%
+#   rename(consumption = "Value", year="TIME")
 
-#download country code csv
-countryCodes= "countryCodes.csv"
-if(!file.exists(countryCodes))
-  download.file("https://gist.githubusercontent.com/radcliff/f09c0f88344a7fcef373/raw/2753c482ad091c54b1822288ad2e4811c021d8ec/wikipedia-iso-country-codes.csv", destfile = countryCodes)
+meatData= data.table::fread("meat-supply-per-person.csv") 
+colnames(meatData) = c("COUNTRY", "code", "year", "consumption")
 
-countryCodes= read.csv(countryCodes) 
-countryCodes= as_tibble(countryCodes)
-colnames(countryCodes) = c("COUNTRY", "Alpha2", "LOCATION", "numeric", "iso")
+# #download country code csv
+# countryCodes= "countryCodes.csv"
+# if(!file.exists(countryCodes))
+#   download.file("https://gist.githubusercontent.com/radcliff/f09c0f88344a7fcef373/raw/2753c482ad091c54b1822288ad2e4811c021d8ec/wikipedia-iso-country-codes.csv", destfile = countryCodes)
+# 
+# countryCodes= read.csv(countryCodes) 
+# countryCodes= as_tibble(countryCodes)
+# colnames(countryCodes) = c("COUNTRY", "Alpha2", "LOCATION", "numeric", "iso")
+# 
+# #merging country code data frame & meat data frame so that the meat data frame has full country name
+# meatData = merge(
+#   x = meatData,
+#   y = countryCodes,
+#   all.x = TRUE, all.y = FALSE
+# )
 
-#merging country code data frame & meat data frame so that the meat data frame has full country name
-meatData = merge(
-  x = meatData,
-  y = countryCodes,
-  all.x = TRUE, all.y = FALSE
-)
+#check for missing data
+meatData[,table(is.na(consumption))]
+# no missing data
 ```
 
 ```{r anemia data cleanup, echo= FALSE, include= FALSE}
 #reading in all 3 anemia data sets: mild, moderate & severe
 #changing mean variable to be representative of the type of anemia
-mildAnemia= read.csv("MildAnemia.CSV") 
-mildAnemia= as_tibble(mildAnemia)
+mildAnemia= data.table::fread("MildAnemia.CSV") 
 mildAnemia = mildAnemia %>%
   rename(COUNTRY = "ADM0_NAME", mildPct = "mean")
 
-
-
-modAnemia= read.csv("ModerateAnemia.CSV") 
-modAnemia= as_tibble(modAnemia)
+modAnemia= data.table::fread("ModerateAnemia.CSV") 
 modAnemia = modAnemia %>%
   rename(COUNTRY = "ADM0_NAME", modPct = "mean")
 
-
-
-sevAnemia= read.csv("SevereAnemia.CSV") 
-sevAnemia= as_tibble(sevAnemia)
+sevAnemia= data.table::fread("SevereAnemia.CSV") 
 sevAnemia = sevAnemia %>%
   rename(COUNTRY = "ADM0_NAME", sevPct = "mean")
 
+# finding mean Anemia pct by country & year
+mildAvg = mildAnemia[,.(
+  mildPct = mean(mildPct,na.rm = TRUE)
+  ), by = c("COUNTRY", "year")]
+modAvg = modAnemia[,.(
+  modPct = mean(modPct,na.rm = TRUE)
+  ), by = c("COUNTRY", "year")]
+sevAvg = sevAnemia[,.(
+  sevPct = mean(sevPct,na.rm = TRUE)
+  ), by = c("COUNTRY", "year")]
 
+# merging all 3 anemia data frames
+TotalAnemia = merge(
+  x = mildAvg,
+  y = modAvg,
+  all.x = TRUE, all.y = FALSE
+)
 
+TotalAnemia = merge(
+  x = TotalAnemia,
+  y = sevAvg,
+  all.x = TRUE, all.y = FALSE
+)
+
+#check for any missing data
+TotalAnemia[,table(is.na(mildPct))]
+TotalAnemia[,table(is.na(modPct))]
+TotalAnemia[,table(is.na(sevPct))]
+#no missing data
+```
+
+```{r merging all data, echo= FALSE, include= FALSE}
+#selecting necessary info from meat data & only considering beef
+
+#merging meat & anemia data
+TotalData = merge(
+  x = TotalAnemia,
+  y = meatData,
+  all.x = TRUE, all.y = FALSE
+)
+
+TotalData[,table(is.na(consumption))]
+#missing 392/1640 -> some whole countries are missing, some years for specific countries missing
+
+TotalData = na.omit(TotalData)
+#removed all rows with NAs -> 1258 obs 
 ```
 
 
