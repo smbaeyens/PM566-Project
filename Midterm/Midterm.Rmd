@@ -1,0 +1,86 @@
+---
+title: "Untitled"
+author: "Sylvia Baeyens"
+date: "due 10/22/2021"
+output:
+  github_document:
+    html_preview: false
+  html_document: default
+  word_document: default
+always_allow_html: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+options(repos = c(CRAN = "http://cran.rstudio.com"))
+```
+
+
+```{r packages, echo= FALSE, include= FALSE}
+#including necessary libraries
+library(tidyverse)
+library(tidytext)
+library(dplyr)
+library(ggplot2)
+library(R.utils)
+library(data.table)
+```
+
+## Introduction
+
+
+## Methods
+
+```{r meat data cleanup, echo= FALSE, include= FALSE}
+#reading in meat dataset
+meatData= read.csv("MeatConsumption.csv") 
+meatData= as_tibble(meatData)
+
+#download country code csv
+countryCodes= "countryCodes.csv"
+if(!file.exists(countryCodes))
+  download.file("https://gist.githubusercontent.com/radcliff/f09c0f88344a7fcef373/raw/2753c482ad091c54b1822288ad2e4811c021d8ec/wikipedia-iso-country-codes.csv", destfile = countryCodes)
+
+countryCodes= read.csv(countryCodes) 
+countryCodes= as_tibble(countryCodes)
+colnames(countryCodes) = c("COUNTRY", "Alpha2", "LOCATION", "numeric", "iso")
+
+#merging country code data frame & meat data frame so that the meat data frame has full country name
+meatData = merge(
+  x = meatData,
+  y = countryCodes,
+  all.x = TRUE, all.y = FALSE
+)
+```
+
+```{r anemia data cleanup, echo= FALSE, include= FALSE}
+#reading in all 3 anemia data sets: mild, moderate & severe
+#changing mean variable to be representative of the type of anemia
+mildAnemia= read.csv("MildAnemia.CSV") 
+mildAnemia= as_tibble(mildAnemia)
+mildAnemia = mildAnemia %>%
+  rename(COUNTRY = "ADM0_NAME", mildPct = "mean")
+
+
+
+modAnemia= read.csv("ModerateAnemia.CSV") 
+modAnemia= as_tibble(modAnemia)
+modAnemia = modAnemia %>%
+  rename(COUNTRY = "ADM0_NAME", modPct = "mean")
+
+
+
+sevAnemia= read.csv("SevereAnemia.CSV") 
+sevAnemia= as_tibble(sevAnemia)
+sevAnemia = sevAnemia %>%
+  rename(COUNTRY = "ADM0_NAME", sevPct = "mean")
+
+
+
+```
+
+
+## Preliminary Results
+
+
+## Conclusion
