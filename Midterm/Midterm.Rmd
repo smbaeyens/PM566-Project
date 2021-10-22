@@ -40,21 +40,6 @@ library(data.table)
 meatData= data.table::fread("meat-supply-per-person.csv") 
 colnames(meatData) = c("COUNTRY", "code", "year", "consumption")
 
-# #download country code csv
-# countryCodes= "countryCodes.csv"
-# if(!file.exists(countryCodes))
-#   download.file("https://gist.githubusercontent.com/radcliff/f09c0f88344a7fcef373/raw/2753c482ad091c54b1822288ad2e4811c021d8ec/wikipedia-iso-country-codes.csv", destfile = countryCodes)
-# 
-# countryCodes= read.csv(countryCodes) 
-# countryCodes= as_tibble(countryCodes)
-# colnames(countryCodes) = c("COUNTRY", "Alpha2", "LOCATION", "numeric", "iso")
-# 
-# #merging country code data frame & meat data frame so that the meat data frame has full country name
-# meatData = merge(
-#   x = meatData,
-#   y = countryCodes,
-#   all.x = TRUE, all.y = FALSE
-# )
 
 #check for missing data
 meatData[,table(is.na(consumption))]
@@ -117,15 +102,109 @@ TotalData = merge(
   all.x = TRUE, all.y = FALSE
 )
 
+#download country code csv
+countryCodes= "countryCodes.csv"
+if(!file.exists(countryCodes)){
+   download.file("https://pkgstore.datahub.io/JohnSnowLabs/country-and-continent-codes-list/country-and-continent-codes-list-csv_csv/data/b7876b7f496677669644f3d1069d3121/country-and-continent-codes-list-csv_csv.csv", destfile = countryCodes)}
+
+countryCodes= data.table::fread(countryCodes)
+countryCodes = countryCodes %>%
+  rename(CONTINENT = "Continent_Name", code= "Three_Letter_Country_Code") %>%
+  select(code, CONTINENT)
+
+#merging country code data frame & Total Data data frame so that the meat data frame includes continent name
+TotalData = merge(
+  x = TotalData,
+  y = countryCodes,
+  all.x = TRUE, all.y = FALSE,
+  by = "code"
+)
+
+
 TotalData[,table(is.na(consumption))]
 #missing 392/1640 -> some whole countries are missing, some years for specific countries missing
 
 TotalData = na.omit(TotalData)
 #removed all rows with NAs -> 1258 obs 
+
+summary(TotalData)
+#no data looks out of the ordinary
+
+hist(TotalData$consumption)
+hist(TotalData$mildPct)
+hist(TotalData$modPct)
+hist(TotalData$sevPct)
+
 ```
 
 
 ## Preliminary Results
 
+```{r}
+
+ggplot(TotalData,aes(x=consumption, y=(mildPct+modPct+sevPct)*100)) +
+  geom_point() +
+  geom_smooth(method= "lm") +
+  ggtitle("Visualizing the Relationship between Anemia & Meat Consumption in Underdeveloped Countries")+
+  ylab('Total Percentage of Women 15-49 with Anemia of any Severity')+
+  xlab('Meat Consumption (kg/capital/year')
+
+TotalData %>%
+  filter("Asia"== CONTINENT) %>%
+  ggplot(aes(x=year, y=(mildPct+modPct+sevPct)*100)) +
+    facet_wrap(~COUNTRY, nrow= 8) +
+    geom_point() +
+    geom_smooth(method= "lm")+
+    ggtitle("Anemia in Young Women in underdeveloped Asian Countries")+
+    theme(axis.text.x = element_text(angle = 45))+
+    ylab('Total Percentage of Women 15-49 with Anemia of any Severity')
+
+TotalData %>%
+  filter("Africa"== CONTINENT) %>%
+  ggplot(aes(x=year, y=(mildPct+modPct+sevPct)*100)) +
+    facet_wrap(~COUNTRY, nrow= 8) +
+    geom_point() +
+    geom_smooth(method= "lm")+
+    ggtitle("Anemia in Young Women in underdeveloped African Countries")+
+    theme(axis.text.x = element_text(angle = 45))+
+    ylab('Total Percentage of Women 15-49 with Anemia of any Severity')
+
+TotalData %>%
+  filter("South America"== CONTINENT) %>%
+  ggplot(aes(x=year, y=(mildPct+modPct+sevPct)*100)) +
+    facet_wrap(~COUNTRY, nrow= 3) +
+    geom_point() +
+    geom_smooth(method= "lm")+
+    ggtitle("Anemia in Young Women in underdeveloped South American Countries")+
+    theme(axis.text.x = element_text(angle = 45))+
+    ylab('Total Percentage of Women 15-49 with Anemia of any Severity')
+
+TotalData %>%
+  filter("North America"== CONTINENT) %>%
+  ggplot(aes(x=year, y=(mildPct+modPct+sevPct)*100)) +
+    facet_wrap(~COUNTRY, nrow= 3) +
+    geom_point() +
+    geom_smooth(method= "lm")+
+    ggtitle("Anemia in Young Women in underdeveloped North American Countries")+
+    theme(axis.text.x = element_text(angle = 45))+
+    ylab('Total Percentage of Women 15-49 with Anemia of any Severity')
+```
+
+```{r}
+
+#looking at averages for each country
+
+TotalDataAvg = TotalData[,.(
+  consumption = mean(consumption,na.rm = TRUE),
+  mildPct = mean(mildPct,na.rm = TRUE),
+  modPct = mean(modPct,na.rm = TRUE),
+  sevPct = mean(sevPct,na.rm = TRUE)
+),by = "COUNTRY"]
+
+TotalDataAvg %>%
+  arrange(consumption) %>%
+  ggplot(aes(x=consumption, y=COUNTRY))+
+  geom_bar(stat= "identity") 
+```
 
 ## Conclusion
