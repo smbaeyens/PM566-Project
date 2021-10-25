@@ -1,11 +1,37 @@
 Midterm
 ================
-Sylvia Baeyens
+Sylvia Baeyens,
 due 10/22/2021
 
 # Introduction
 
-(provide background on your data set and formulated question)
+This midterm project will look at the relationship between meat
+consumption and anemia prevalance in low and middle income countries.
+
+Anemia is one of the most common medical conditions among menopausal
+women. Anemia is defined as a condition where the body lacks enough red
+blood cells to carry sufficient oxygen. Anemia is associated with many
+health risk factors and increased fatigue.
+
+The main cause of anemia is iron deficiency. Iron is required to produce
+hemoglobin, a protein in red blood cells which binds to oxygen. Another
+secondary cause of anemia is blood loss, which occurs cyclically,
+usually monthly, in menopausal women; therefore, menopausal women are at
+an increased risk for anemia.
+
+Iron can be consumed through diet in two forms: heme and non-heme iron.
+Heme iron is found only in animal products, such as red meat and
+poultry. Non-heme iron is plant based, and can be found in food sources
+such as nuts, legumes, and leafy greens. Heme iron is more readibly
+absorbed by the body than non-heme iron; non-heme iron often requires
+secondary vitamins, such as vitamin C, to upregulate proper absorption.
+While it is certainly possible to avoid an iron deficiency on a
+plant-based diet, most plant-based individuals choose to supplement
+their diet with iron supplements.
+
+This midterm will focus solely on lower and middle income countries, as
+information on proper diet and supplementation is not readily available
+to these populations and the economic burden of anemia is greater.
 
 # Methods
 
@@ -21,7 +47,11 @@ ghdx.healthdata.org. This data was collected by the Institute of Health
 Metrics and Evaluation with the funding from the Bill and Melinda Gates
 Foundation between January 2000 and December 2019. It was published in
 2021. There were three different csv files in this set, one for mild
-anemia, one for moderate anemia, and one for severe anemia. The data
+anemia, one for moderate anemia, and one for severe anemia. The
+thresholds for these distinctions can be found in the paper *“Anemia
+prevalence in women of reproductive age in low- and middle-income
+countries between 2000 and 2018”*, published in **Nature Medicine** in
+2021, and they vary between pregnant and non-pregnant women. The data
 sets detailed the prevalence of each kind of anemia every year in 82
 LMICs at a 5x5km level. These csv’s were downloaded from the site
 manually and read into data tables in the R code. From there, variable
@@ -140,7 +170,7 @@ continent, to confirm trends noted in the paragraphs above. Each of the
 1248 points represents one country at one year.
 ![](Midterm_files/figure-gfm/unnamed-chunk-4-1.png)<!-- -->
 
-From this plot, there appears to be a large negative relationship
+From this plot, there appears to be a large negative linear relationship
 between meat consumption and anemia prevalance in LMICs. As meat
 consumption increases in a country, the prevalance of anemia decreases.
 Most African countries have low values for meat consumption per capita
@@ -167,3 +197,17 @@ anemia. As the magnitude of these 3 coefficients fall between0.3 and
 0.5, they indicate a low correlation.
 
 # Conclusion
+
+Based on the data presented above, there is a low negative correlation
+between meat consumption and anemia prevalance. There are likely many
+other factors affecting the high levels of anemia found in these LMICs,
+some of which are also related to diet. Further research could look at
+other factors, such as the consumption of other minerals and vitamins or
+the prevalence of other blood and digestive-related diseases.
+
+It is positive to see that the prevalance of anemia is slowly
+decreasing, and it would be interesting to look into why this is
+occuring as well.
+
+Comparing these results to those of more prosperous countries could be a
+final direction for this research to go into.
