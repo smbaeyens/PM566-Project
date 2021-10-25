@@ -4,7 +4,7 @@ author: "Sylvia Baeyens"
 date: "due 10/22/2021"
 output:
   github_document:
-    html_preview: false
+    html_preview: true
   html_document: default
   word_document: default
 always_allow_html: true
@@ -26,15 +26,15 @@ library(R.utils)
 library(data.table)
 ```
 
-## Introduction
+# Introduction
 
-(provide background on your dataset and formulated question)
+(provide background on your data set and formulated question)
 
-## Methods
+# Methods
 
-In order to answer the main question, multiple datasets were acquired from various sources. The data can be organized into 3 categories: anemia data, meat consumption data, and country data.
+In order to answer the main question, multiple data sets were acquired from various sources. The data can be organized into 3 categories: anemia data, meat consumption data, and country data.
 
-# Anemia Data
+## Anemia Data
 
 The data sets related to the prevalence of anemia in 15-49 year old women in low and middle income countries (LMIC) were exported from ghdx.healthdata.org. This data was collected by the Institute of Health Metrics and Evaluation with the funding from the Bill and Melinda Gates Foundation between January 2000 and December 2019. It was published in 2021. There were three different csv files in this set, one for mild anemia, one for moderate anemia, and one for severe anemia. The data sets detailed the prevalence of each kind of anemia every year in 82 LMICs at a 5x5km level. These csv's were downloaded from the site manually and read into data tables in the R code. From there, variable names were changed to improve ease of merging. Instead of keeping the data at the 5x5km level, the mean anemia prevalence was found by country and year. Finally, the three data tables (moderate, mild, and severe) were merged into the data table "TotalAnemia". This table included all 82 countries and the mild, moderate, and severe percentages of anemia prevalence for every year from 2000 to 2019. No values were found to be missing or unreasonable. 
 
@@ -88,7 +88,7 @@ TotalAnemia[,table(is.na(sevPct))]
 #no missing data
 ```
 
-# Meat Consumption Data 
+## Meat Consumption Data 
 
 The data set related to meat food supply quantity in terms of kilograms per capita per year was exported from ourworldindata.org. This data was sourced from data published by the United Nations Food and Agricultural Organization (FAO) in 2020. The data was collected from 1961 to 2017. This csv file was also exported manually from the website and read into a data table within the R code. It contains data from 215 countries and was not found to have any missing values. The data only had 4 variables: the country name, 3 letter country code, year, and meat food supply quantity; these variables were renamed for ease of use and to match the names of the anemia data table.
 
@@ -106,11 +106,11 @@ meatData[,table(is.na(consumption))]
 # no missing data
 ```
 
-# country data & final data table
+## Country Data & Final Data Table
 
-Following preliminary data cleanup and wrangling, the TotalAnemia and meatData data tables were merged together by country and year to create a new data table: TotalData. All observations from the TotalAnemia data table were kept. To add a final level of analysis, a country code data set was downloaded and read in by the R code. This csv file was found on datahub.io, and lists every country, along with its three letter country code, continent, and other identifying information; only the three letter code and continent were selcted for. This country code data set was then merged with the TotalData set by code, so that every observation now included the continent as well.
+Following preliminary data cleanup and wrangling, the TotalAnemia and meatData data tables were merged together by country and year to create a new data table: TotalData. All observations from the TotalAnemia data table were kept. To add a final level of analysis, a country code data set was downloaded and read in by the R code. This csv file was found on datahub.io, and lists every country, along with its three letter country code, continent, and other identifying information; only the three letter code and continent were selected for. This country code data set was then merged with the TotalData set by code, so that every observation now included the continent as well.
 
-Final data cleanup and wrangling was now performed. Any observations missing meat consumption values were removed. The data table was now left with data for 69 LMICs, for a total of 1258 observations. When looking at summaries and visualizations of the various variables, no data looked unreasonable. The results of these summary statistics are printed below: 
+Final data cleanup and wrangling was now performed. Any observations missing meat consumption values were removed. The data table was now left with data for 69 LMICs, for a total of 1258 observations. When looking at summaries and visualizations of the various variables, no data looked unreasonable. The data was now ready for further exploration via visualization, as seen in the preliminary results section.  
 
 
 ```{r merging all data, echo= FALSE, include= FALSE}
@@ -160,30 +160,30 @@ hist(TotalData$sevPct)
 
 ```
 
-```{r summary table, echo= FALSE, include= FALSE}
+
+# Preliminary Results
+
+(provide summary statistics in tabular form and publication-quality figures, take a look at the kable function from knitr to write nice tables in Rmarkdown)
+
+The results of the summary statistics viewed following data clean up for the 4 variables of interest in the TotalData data table are printed below. It is important to note that this data table only includes 69 Low & Middle Income Countries (LMICs) are explained above. It is known that including counties such as the United States or the UK would increase all values for meat consumption in kilograms per capita. 
+
+```{r summary table, echo= FALSE}
 TotalData[, .(
     consumption = quantile(consumption, na.rm=TRUE),
     mild_anemia_percentage = quantile(mildPct, na.rm=TRUE),
     moderate_anemia_percentage = quantile(modPct, na.rm=TRUE),
     severe_anemia_percentage = quantile(sevPct, na.rm=TRUE)
     )
-    ] %>% knitr::kable(caption = "Quantiles (minimum, 25%, median, 75%, maximum) for Selected Variables in TotalData data frame")
+    ] %>% knitr::kable(caption = "**Quantiles (minimum, 25%, median, 75%, maximum) for Selected Variables in TotalData data frame**")
 #, row.names = c("Minimum", "First Quantile", "Median", "Third Quantile", "Maximum"))
 
 ```
 
-## Preliminary Results
+The values for mild and anemia prevalence appear very similar, while the prevalence of severe anemia is much lower. For all further visualization and analysis, these three percentages will be summed to find the total percentage of women in each country between the ages of 15 and 49 with anemia.
 
-(provide summary statistics in tabular form and publication-quality figures, take a look at the kable function from knitr to write nice tables in Rmarkdown)
+The first step in visualizing data was viewing trends in total anemia prevalence for every country. To do this, the prevalence of mild, moderate, and severe anemia were summed together for every year and country. This data is visualized below, separated into the various continents represented for ease of viewing. A trend line was applied to each plot. This visualization was done to see if there are any trends over time of anemia prevalence. 
 
-```{r, echo= FALSE, include= FALSE}
-
-ggplot(TotalData,aes(x=consumption, y=(mildPct+modPct+sevPct)*100)) +
-  geom_point() +
-  geom_smooth(method= "lm") +
-  ggtitle("Visualizing the Relationship between Anemia & Meat Consumption in Underdeveloped Countries")+
-  ylab('Total Percentage of Women 15-49 with Anemia of any Severity')+
-  xlab('Meat Consumption (kg/capital/year')
+```{r, echo= FALSE, fig.height = 7, message = FALSE}
 
 TotalData %>%
   filter("Asia"== CONTINENT) %>%
@@ -193,8 +193,8 @@ TotalData %>%
     geom_smooth(method= "lm")+
     ggtitle("Anemia in Young Women in underdeveloped Asian Countries")+
     theme(axis.text.x = element_text(angle = 45))+
-    ylab('Total Percentage of Women 15-49 with Anemia of any Severity')
-
+    ylab('Total Percentage of Women 15-49yo with Anemia of any Severity') 
+  
 TotalData %>%
   filter("Africa"== CONTINENT) %>%
   ggplot(aes(x=year, y=(mildPct+modPct+sevPct)*100)) +
@@ -203,30 +203,27 @@ TotalData %>%
     geom_smooth(method= "lm")+
     ggtitle("Anemia in Young Women in underdeveloped African Countries")+
     theme(axis.text.x = element_text(angle = 45))+
-    ylab('Total Percentage of Women 15-49 with Anemia of any Severity')
-
-TotalData %>%
-  filter("South America"== CONTINENT) %>%
-  ggplot(aes(x=year, y=(mildPct+modPct+sevPct)*100)) +
-    facet_wrap(~COUNTRY, nrow= 3) +
-    geom_point() +
-    geom_smooth(method= "lm")+
-    ggtitle("Anemia in Young Women in underdeveloped South American Countries")+
-    theme(axis.text.x = element_text(angle = 45))+
-    ylab('Total Percentage of Women 15-49 with Anemia of any Severity')
-
-TotalData %>%
-  filter("North America"== CONTINENT) %>%
-  ggplot(aes(x=year, y=(mildPct+modPct+sevPct)*100)) +
-    facet_wrap(~COUNTRY, nrow= 3) +
-    geom_point() +
-    geom_smooth(method= "lm")+
-    ggtitle("Anemia in Young Women in underdeveloped North American Countries")+
-    theme(axis.text.x = element_text(angle = 45))+
-    ylab('Total Percentage of Women 15-49 with Anemia of any Severity')
+    ylab('Total Percentage of Women 15-49yo with Anemia of any Severity')
 ```
 
-```{r, echo= FALSE, include= FALSE}
+```{r, echo= FALSE, fig.height = 4, message = FALSE}
+TotalData %>%
+  filter("South America"== CONTINENT | "North America"== CONTINENT) %>%
+  ggplot(aes(x=year, y=(mildPct+modPct+sevPct)*100)) +
+    facet_wrap(~COUNTRY, nrow= 3) +
+    geom_point() +
+    geom_smooth(method= "lm")+
+    ggtitle("Anemia in Young Women in underdeveloped North & South American Countries")+
+    theme(axis.text.x = element_text(angle = 45))+
+    ylab('Total Percentage of Women 15-49yo with Anemia of any Severity')
+
+```
+
+From these 3 graphs, it does appear that during the time period between 2000 and 2017, the prevalence of anemia decreased very slightly in the majority of these LMICs, as shown by the slight negative slope of the best fit trend line. The total percentage of women between the ages of 15-49 with anemia ranges from 10-60%, depending on the country. 
+
+Next, the average meat consumption in terms of kilograms per capita and the average anemia prevalence between the years of 2000 and 2017 was found for each country. This was done to compare meat consumption and anemia prevalence between these various countries. 
+
+```{r, echo= FALSE, fig.height=8}
 
 #looking at averages for each country
 
@@ -239,11 +236,45 @@ TotalDataAvg = TotalData[,.(
 
 
 ggplot(data = TotalDataAvg, mapping = aes(x = reorder(COUNTRY, consumption), consumption)) + 
-  geom_bar(stat = "identity") + coord_flip()
+  geom_bar(stat = "identity") + coord_flip()+
+    ggtitle("Average Meat Consumption between 2000 & 2017 in 69 LMICs")+
+    ylab('Meat Consumption (kg/capita/yr)')+
+    xlab('')
 
 ggplot(data = TotalDataAvg, mapping = aes(reorder(COUNTRY, mildPct+modPct+sevPct), (mildPct+modPct+sevPct)*100)) + 
-  geom_bar(stat = "identity") + coord_flip()
+  geom_bar(stat = "identity") + coord_flip()+
+    ggtitle("Average Prevalence of Anemia in Women between 2000 & 2017 in 69 LMICs")+
+    ylab('Total Percentage of Women 15-49yo with Anemia of any Severity')+
+    xlab('')
 ```
 
+As confirmed in previous graphs and tables, meat consumption ranged between 5 and 95 kilograms of meat per capita per year while total anemia prevalence ranged from 10 to 60%. Some trends that can be seen from the two graphs above include that South and North American countries have a high consumption of meat while most African countries have a lower meat consumption. The countries with the lowest meat consumption include the Asian countries of India, Sri Lanka, and Bangladesh, countries where vegetarianism is a main component of the prevalent cultures and religion. The African countries appear to have higher prevalence of anemia, while the 5 countries with the lowest prevalence of anemia are all North or South American. 
 
-## Conclusion
+Finally, we looked at the relationship between meat consumption and anemia prevalance in a scatter plot, where anemia prevalance is on the y axis and meat consumption is on the x axis. Color was based on continent, to confirm trends noted in the paragraphs above. Each of the 1248 points represents one country at one year. 
+```{r, echo= FALSE, message = FALSE}
+
+ggplot(TotalData,aes(x=consumption, y=(mildPct+modPct+sevPct)*100)) +
+  geom_point(aes(color= CONTINENT)) +
+  geom_smooth(method= "lm") +
+  ggtitle("Visualizing the Relationship between Anemia & Meat Consumption in Underdeveloped Countries")+
+  ylab('Total Percentage of Women 15-49 with Anemia of any Severity')+
+  xlab('Meat Consumption (kg/capita/year)')
+
+```
+
+From this plot, there appears to be a large negative relationship between meat consumption and anemia prevalance in LMICs. As meat consumption increases in a country, the prevalance of anemia decreases. Most African countries have low values for meat consumption per capita and high prevalance of anemia. Many South American countries have higher values for meat consumption and a lower prevalance of anemia. There are not many points which fall directly on the best fit line or in its immediate vicinity, indicating that the correlation might not be that large or that there are many outliers.
+
+The final level of analysis included computing the correlation coefficients between the prevalance of various severieties of anemia and meat consumption. These coefficients are shown in the table below.
+
+```{r, echo=FALSE}
+TotalData[, .(
+    "Mild Anemia" = cor(mildPct, consumption),
+    "Moderate Anemia" = cor(modPct, consumption),
+    "Severe Anemia" = cor(sevPct, consumption)
+    )
+    ] %>% knitr::kable(caption = "**Correlation Coefficients between Prevalance of various Severities of Anemia & Meat Consumption**")
+```
+
+The values in the above table confirm the negative relationship between meat consumption and anemia prevalence, apparent in all 3 types of anemia. As the magnitude of these 3 coefficients fall between0.3 and 0.5, they indicate a low correlation. 
+
+# Conclusion
