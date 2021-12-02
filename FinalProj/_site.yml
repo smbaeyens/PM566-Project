@@ -1,6 +1,7 @@
 name: "my-website"
+output_dir: "."
 navbar:
-  title: "PM566 Final Project: Iron Deficiency in LICs"
+  title: "PM566 Final Project: Fall 2021"
   left:
     - text: "Home"
       href: index.html
