@@ -1,0 +1,9 @@
+name: "my-website"
+navbar:
+  title: "PM566 Final Project: Iron Deficiency in LICs"
+  left:
+    - text: "Home"
+      href: index.html
+output:
+  html_document:
+    theme: sandstone
